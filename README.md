@@ -15,8 +15,10 @@ Modyfikuj wyłącznie plik `solution.py`.
 W diagramie mamy doczynienia z dziedziczeniem wielobazowym, poniewaz klasa Vampire dziedziczy po klasach Human i Bat.
 
 Podczas korzystania z dziedziczenia wielobazowego, należy zwrócić uwagę na kilka rzeczy:  
-Kolejność dziedziczenia: Kolejność klas bazowych w definicji klasy jest ważna. Python szuka atrybutów i metod w klasach bazowych od lewej do prawej. To znaczy, jeśli dwie klasy bazowe mają metodę o tej samej nazwie, metoda z klasy, która jest wymieniona pierwsza, będzie miała pierwszeństwo.  
-Wywoływanie konstruktorów klasy bazowej: Podczas korzystania z dziedziczenia wielobazowego, konstruktory klas bazowych nie są automatycznie wywoływane. Musisz wywołać je ręcznie. Możesz to zrobić za pomocą funkcji super(), która zwraca tymczasowy obiekt klasy bazowej, umożliwiając wywołanie jej metod. Pamiętaj, że super() odwołuje się do kolejności MRO (Method Resolution Order), więc może nie zawsze działać jak oczekiwano w przypadku dziedziczenia wielobazowego.  
+-Kolejność dziedziczenia: Kolejność klas bazowych w definicji klasy jest ważna. Python szuka atrybutów i metod w klasach bazowych od lewej do prawej. To znaczy, jeśli dwie klasy bazowe mają metodę o tej samej nazwie, metoda z klasy, która jest wymieniona pierwsza, będzie miała pierwszeństwo.  
+-Wywoływanie konstruktorów klasy bazowej: Podczas korzystania z dziedziczenia wielobazowego, konstruktory klas bazowych nie są automatycznie wywoływane. Musisz wywołać je ręcznie. Możesz to zrobić za pomocą funkcji super(), która zwraca tymczasowy obiekt klasy bazowej, umożliwiając wywołanie jej metod. 
+-Problemy z 'super()' i '**kwargs':
+W przypadku skomplikowanego wielodziedziczenia, używanie super() może prowadzić do nieoczekiwanych rezultatów, jeśli wszystkie klasy nie są projektowane z myślą o współpracy w ramach MRO. Jeżeli jedna z klas nie wywoła super(), łańcuch inicjalizacji może zostać przerwany. Aby tego uniknąć, często stosuje się wzorzec przekazywania argumentów przez *args i **kwargs w konstruktorach wszystkich klas bazowych. Dzięki temu każda klasa może „odebrać” tylko interesujące ją argumenty, a resztę przekazać dalej w łańcuchu wywołań super().
 Oto przykład dziedziczenia wielobazowego w Pythonie, gdzie klasa Vampire dziedziczy po klasach Human i Bat:
 ```python
 class Human:
@@ -33,12 +35,27 @@ class Vampire(Human, Bat):
         Bat.__init__(self, wing_span)
 ```
 W powyższym przykładzie, konstruktory klas Human i Bat są wywoływane ręcznie w konstruktorze klasy Vampire.
+Oto zaś ten sam przykład tylko z wykorzystaniem wykorzystania 'supper()' i '**kwargs'
+```
+class Human:
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)   # przekazujemy dalej resztę argumentów
+        self.name = name
 
+class Bat:
+    def __init__(self, wing_span, **kwargs):
+        super().__init__(**kwargs)  # przekazujemy dalej resztę argumentów
+        self.wing_span = wing_span
+
+class Vampire(Human, Bat):
+    def __init__(self, name, wing_span, **kwargs):
+        super().__init__(name=name, wing_span=wing_span, **kwargs)
+```
 ### Dodatkowe założenia
 
 Zakładamy, że siła ataku:
 - Bat = 5pkt, o 5pkt wiecej jeżeli wingSpan > 5 i o 5pkt wiecej jeżeli `flight_speed` > 5
-- Human = 10pkt, 100pkt jeżeli occupation == `Soldier` i 5pkt jeżeli `born_year` > 2000
+- Human = 10pkt bazowo; 100pkt jeżeli occupation == `Soldier` ; 5pkt jeżeli `born_year` > 2000 i occupation != `Soldier`
 - Vampire = 15pkt, jeżeli atakuje klase Human i Human po ataku ma mniej niż 50% zdrowia to zwiększa swoje zdrowie o 10pkt
 
 Maksymalne i początkowe zdrowie:
