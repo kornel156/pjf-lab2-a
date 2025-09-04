@@ -25,14 +25,17 @@ class TestVampire(unittest.TestCase):
 
     def test_attack(self):
         initial_health = self.vampire_b.get_health()
-        self.vampire_a.attack(self.vampire_b)
-        self.assertTrue(self.vampire_b.get_health() < initial_health)
-
-    def test_attack_max_health(self):
-        initial_health = self.vampire_b.get_health()
-        expected_health = initial_health - 15  # Assuming attack decreases health by 20
+        expected_health = initial_health - 15  # Assuming attack decreases health by 15
         self.vampire_a.attack(self.vampire_b)
         self.assertEqual(self.vampire_b.get_health(), expected_health)
+
+    def test_attack_human_with_less_than_50_health_and_max_health(self):
+        human = Human('Human', 'Worker', 1900)
+        human.decrease_health(60)
+        initial_health = self.vampire_b.get_health()
+        expected_health = initial_health   # Assuming attack decreases health by 20
+        self.vampire_a.attack(human)
+        self.assertEqual(self.vampire_a.get_health(), expected_health)
 
     def test_attack_min_health(self):
         self.vampire_b.decrease_health(290)  # Decrease health to 10
